@@ -64,7 +64,7 @@ titlelogolabel = CTk.CTkLabel(master=root,image=titlelogolabelimage,text="")
 titlelogolabel.grid(row=1, column=4,columnspan=2,pady=10)
 
 #Creates and positions searchbar
-searchbar = CTk.CTkEntry(root, width=200, height=26,corner_radius=6,fg_color="white",text_color="black",font=("Times New Roman",14))
+searchbar = CTk.CTkEntry(root, width=200, height=26,corner_radius=6,fg_color="white",text_color="black",font=("Times New Roman",14),placeholder_text="Movie Title")
 searchbar.grid(column=5,row=3,columnspan=1,sticky=NE,padx=75)
 
 #Fetches data from imdb's web server
