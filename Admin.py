@@ -1,13 +1,18 @@
-import tkinter as tk
+#This is used to configure the limited SQLite databse called movies.db. It can add movies based on title from IMDB's database.
+#It can also be used to modify existing data by using the wished movie_id, e.g. to give it a new image url.
+
+
 import sqlite3
 from tkinter import *
-from tkinter import ttk
-from PIL import Image, ImageTk
 import customtkinter as CTk
 import imdb
 from imdb import Cinemagoer
 ia = imdb.Cinemagoer()
-import random
+
+
+
+#.grid returns None, so to use methods, such as delete on an entry, you have to set the entry and .grid method seperately
+
 
 #connect to database
 con = sqlite3.connect("movies.db")
@@ -43,7 +48,7 @@ def imdb_add():
     #random.shuffle(movies)
     movie_nr = 0
     
-    for movie in movies[movie_nr:7]:
+    for movie in movies[movie_nr:4]:
         if movie['kind'] == 'movie':
             try:
                 id = movies[movie_nr].movieID
@@ -85,10 +90,11 @@ def submitvals():
     submitted_director = director_entry.get()
     submitted_release_year = release_year_entry.get()
     submitted_starring = starring_entry.get()
+    submitted_rating = rating_entry.get()
     submitted_cover = cover_entry.get()
 
      
-    c.execute("INSERT OR REPLACE INTO movies VALUES (?,?,?,?,?,?,?)", (submitted_movie_id,submitted_movie_name,submitted_genre,submitted_director,submitted_release_year,submitted_starring,submitted_cover))
+    c.execute("INSERT OR REPLACE INTO imdb_movies VALUES (?,?,?,?,?,?,?)", (submitted_movie_id,submitted_movie_name,submitted_genre,submitted_director,submitted_release_year,submitted_rating,submitted_starring,submitted_cover))
         
     print("**SUBMISSION SUCCESSFULL**")
 
@@ -105,7 +111,7 @@ def removevals():
     
     remove_movie_id = remove_entry.get()
     
-    c.execute("DELETE FROM movies WHERE movie_id = ?",(remove_movie_id,))
+    c.execute("DELETE FROM imdb_movies WHERE movie_id = ?",(remove_movie_id,))
     
     print("**MOVIE SUCCESSFULLY REMOVED**")
     removed = CTk.CTkLabel(admin, text="**MOVIE SUCCESSFULLY REMOVED**",font=("Helvetica neu", 8))
@@ -123,6 +129,7 @@ def cleartext():
     director_entry.delete(0, END)
     release_year_entry.delete(0, END)
     starring_entry.delete(0, END)
+    rating_entry.delete(0, END)
     cover_entry.delete(0, END)
     
 def cleartext2():
@@ -131,32 +138,25 @@ def cleartext2():
 
 #updates movie_id_count 
 def movie_id_count_func():
-    c.execute("SELECT movie_id FROM movies")
+    c.execute("SELECT movie_id FROM imdb_movies")
 
     movie_id_count = c.fetchall()
     movie_id_count = len(movie_id_count)
     movie_id_count += 1
     movie_id_entry.insert(0,movie_id_count)
+    
 
 #Textlabels
-movie_id = CTk.CTkLabel(admin, text="movie_id",font=("Helvetica neu", 12))
-movie_name = CTk.CTkLabel(admin, text="movie_name",font=("Helvetica neu", 12))
-genre = CTk.CTkLabel(admin, text="genre",font=("Helvetica neu", 12))
-director = CTk.CTkLabel(admin, text="director",font=("Helvetica neu", 12))
-release_year = CTk.CTkLabel(admin, text="release_year",font=("Helvetica neu", 12))
-starring = CTk.CTkLabel(admin, text="starring",font=("Helvetica neu", 12))
-cover = CTk.CTkLabel(admin, text="cover",font=("Helvetica neu", 12))
-remove = CTk.CTkLabel(admin,text="remove movie_id",font=("Helvetica neu", 12))
+movie_id = CTk.CTkLabel(admin, text="movie_id",font=("Helvetica neu", 12)).grid(row=1,padx=3,pady=3)
+movie_name = CTk.CTkLabel(admin, text="movie_name",font=("Helvetica neu", 12)).grid(row=2,padx=3,pady=3)
+genre = CTk.CTkLabel(admin, text="genre",font=("Helvetica neu", 12)).grid(row=3,padx=3,pady=3)
+director = CTk.CTkLabel(admin, text="director",font=("Helvetica neu", 12)).grid(row=4,padx=3,pady=3)
+release_year = CTk.CTkLabel(admin, text="release_year",font=("Helvetica neu", 12)).grid(row=5,padx=3,pady=3)
+starring = CTk.CTkLabel(admin, text="starring",font=("Helvetica neu", 12)).grid(row=6,padx=3,pady=3)
+rating = CTk.CTkLabel(admin, text="rating",font=("Helvetica neu", 12)).grid(row=7,padx=3,pady=3)
+cover = CTk.CTkLabel(admin, text="cover",font=("Helvetica neu", 12)).grid(row=8,padx=3,pady=3)
+remove = CTk.CTkLabel(admin,text="remove movie_id",font=("Helvetica neu", 12)).grid(row=7, column=5,padx=30,stick=SE)
 
-#Textlabels positioning
-movie_id.grid(row=1,padx=3,pady=3)
-movie_name.grid(row=2,padx=3,pady=3)
-genre.grid(row=3,padx=3,pady=3)
-director.grid(row=4,padx=3,pady=3)
-release_year.grid(row=5,padx=3,pady=3)
-starring.grid(row=6,padx=3,pady=3)
-cover.grid(row=7,padx=3,pady=3)
-remove.grid(row=6, column=5,padx=5,stick=SE)
 
 #INSTRUCTIONS FOR ADMINS
 instructionstext = """INSTRUCTIONS:
@@ -166,8 +166,7 @@ Seperate genres and names with commas
 Do NOT put too many characters in one section 
 (Preferably max 2 people in 'starring') 
 'remove movie_id' removes all of a movies data based on the movie_id
-Cover-filename has to end in .png
-Download and place cover into folder 'Moviecovers'"""
+Cover-filename has to end in .jpeg'"""
 
 instructions = CTk.CTkLabel(admin,text=instructionstext,font=("Helvetica neu", 10))
 instructions.grid(row=2,column=4,rowspan=4,columnspan=4,sticky=W)
@@ -180,6 +179,7 @@ genre_input = StringVar()
 director_input = StringVar()
 release_year_input = StringVar()
 starring_input = StringVar()
+rating_input = StringVar()
 cover_input = StringVar()
 remove_input = StringVar()
 
@@ -190,6 +190,7 @@ genre_entry = CTk.CTkEntry(admin, textvariable = genre_input)
 director_entry = CTk.CTkEntry(admin, textvariable = director_input)
 release_year_entry = CTk.CTkEntry(admin, textvariable = release_year_input)
 starring_entry = CTk.CTkEntry(admin, textvariable = starring_input)
+rating_entry = CTk.CTkEntry(admin, textvariable = rating_input)
 cover_entry = CTk.CTkEntry(admin, textvariable = cover_input)
 remove_entry = CTk.CTkEntry(admin, textvariable = remove_input,width=50)
 
@@ -200,8 +201,9 @@ genre_entry.grid(row=3, column=1)
 director_entry.grid(row=4, column=1)
 release_year_entry.grid(row=5, column=1)
 starring_entry.grid(row=6, column=1)
-cover_entry.grid(row=7, column=1)
-remove_entry.grid(row=7,column=5, padx=50)
+rating_entry.grid(row=7, column=1)
+cover_entry.grid(row=8, column=1)
+remove_entry.grid(row=8,column=5, padx=50)
 
 #clears pre-written text and makes text black
 def temp_text1(e):
@@ -223,6 +225,9 @@ def temp_text6(e):
     entry6.delete(0,"end")
     cover_entry.config(fg_color="black")
 
+def temp_text7(e):
+    entry7.delete(0,"end")
+    cover_entry.config(fg_color="black")
     
 #pre-written movie_id
 #fixes 0 added back of number
@@ -256,6 +261,12 @@ release_year_entry.insert(0,str("e.g. 2022"))
 release_year_entry.configure(text_color="grey")
 release_year_entry.bind("<FocusIn>", temp_text4)
 
+#pre-written rating
+entry7=starring_entry
+rating_entry.insert(0,"e.g. 6.9")
+rating_entry.configure(text_color="grey")
+rating_entry.bind("<FocusIn>", temp_text7)
+
 #pre-written starring
 entry5=starring_entry
 starring_entry.insert(0,"e.g. Robert Pattinson")
@@ -264,20 +275,16 @@ starring_entry.bind("<FocusIn>", temp_text5)
 
 #pre-written cover
 entry6=cover_entry
-cover_entry.insert(0,"e.g. file_name.png")
+cover_entry.insert(0,"e.g. file_name.jpeg")
 cover_entry.configure(text_color="grey")
 cover_entry.bind("<FocusIn>", temp_text6)
 
-
-
-
-
-
+#Submit from IMDB
 imdb_button = CTk.CTkButton(admin,text="Submit", command = imdb_add)
 imdb_button.grid(column=8, row = 5)
 
 #Submitbutton
-CTk.CTkButton(admin, width=20, text="Submit", command=lambda:[submitvals(),cleartext(),movie_id_count_func()]).grid(row=7, column=3,padx=6)
+CTk.CTkButton(admin, width=20, text="Submit", command=lambda:[submitvals(),cleartext(),movie_id_count_func()]).grid(row=8, column=3,padx=6)
 #Removebutton
-CTk.CTkButton(admin,width=10, text="Remove", command=lambda:[removevals(),cleartext2(),movie_id_count_func()]).grid(row=7, column=5,padx=6,sticky=E)
+CTk.CTkButton(admin,width=10, text="Remove", command=lambda:[removevals(),cleartext2(),movie_id_count_func()]).grid(row=8, column=5,padx=6,sticky=E)
 admin.mainloop()
